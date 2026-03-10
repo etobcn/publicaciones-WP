@@ -21,7 +21,7 @@ export default function DarkSelect({ label, placeholder, options, value, onValue
             text-[13px] text-white/90
             focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20
             transition-all duration-200
-            [&>span]:text-white/25 data-[state=open]:border-violet-500/50
+            [&>span[data-placeholder]]:text-white/25 data-[state=open]:border-violet-500/50
           "
         >
           <SelectValue placeholder={placeholder} />
