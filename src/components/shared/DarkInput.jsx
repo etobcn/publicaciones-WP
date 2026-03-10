@@ -2,7 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function DarkInput({ label, optional, ...props }) {
+export default function DarkInput({ label, optional, id, ...props }) {
   return (
     <div className="space-y-2">
       {label && (
