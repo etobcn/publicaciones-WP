@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FileText, Image, Send, Loader2 } from "lucide-react";
+import { FileText, Image, Send, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
 import DarkInput from "@/components/shared/DarkInput";
 import DarkSelect from "@/components/shared/DarkSelect";
@@ -27,36 +28,55 @@ export default function Publicaciones() {
   });
   const [wordFiles, setWordFiles] = useState([]);
   const [mediaFiles, setMediaFiles] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = () => {
-    setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 2000);
+  const handleSubmit = async () => {
+    setStatus("loading");
+    setErrorMsg("");
+
+    const formData = new FormData();
+    formData.append("nombre_empresa", form.nombre_empresa);
+    formData.append("fecha", form.fecha);
+    formData.append("medio", form.medio);
+    formData.append("formato", form.formato);
+    formData.append("enlaces", String(form.enlaces));
+    formData.append("premio", form.premio);
+
+    wordFiles.forEach((file) => formData.append("documento_word", file));
+    mediaFiles.forEach((file) => formData.append("imagenes", file));
+
+    try {
+      const response = await base44.functions.invoke("webhookPublicaciones", formData);
+      if (response.data?.success) {
+        setStatus("success");
+      } else {
+        setErrorMsg(response.data?.error || "Error desconocido");
+        setStatus("error");
+      }
+    } catch (err) {
+      setErrorMsg(err.message || "Error al conectar con el servidor");
+      setStatus("error");
+    }
   };
 
   return (
     <div className="px-8 py-8 max-w-3xl mx-auto">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="mb-8"
       >
-        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">
-          Nueva Publicación
-        </h1>
+        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">Nueva Publicación</h1>
         <p className="mt-1 text-[13px] text-white/35">
           Completa los datos y sube los archivos para procesar la publicación.
         </p>
       </motion.div>
 
       <div className="space-y-5">
-        {/* Datos Generales */}
         <FormCard title="Datos Generales">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <DarkInput
@@ -100,7 +120,6 @@ export default function Publicaciones() {
           </div>
         </FormCard>
 
-        {/* Archivos Adjuntos */}
         <FormCard title="Archivos Adjuntos" description="Sube el documento Word y las imágenes o PDFs asociados.">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileDropZone
@@ -121,36 +140,39 @@ export default function Publicaciones() {
           </div>
         </FormCard>
 
-        {/* Submit */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="
-              w-full h-12 rounded-xl text-[14px] font-semibold
-              bg-violet-600 hover:bg-violet-500 text-white
-              transition-all duration-200
-              disabled:opacity-50 disabled:cursor-not-allowed
-              shadow-lg shadow-violet-600/20
-            "
+        {/* Feedback Messages */}
+        {status === "success" && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/[0.2]"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Procesando...
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Procesar Publicación
-              </>
-            )}
-          </Button>
-        </motion.div>
+            <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span className="text-[13px] text-emerald-300">Publicación enviada con éxito.</span>
+          </motion.div>
+        )}
+        {status === "error" && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/[0.08] border border-red-500/[0.2]"
+          >
+            <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+            <span className="text-[13px] text-red-300">{errorMsg || "Ha ocurrido un error. Inténtalo de nuevo."}</span>
+          </motion.div>
+        )}
+
+        <Button
+          onClick={handleSubmit}
+          disabled={status === "loading"}
+          className="w-full h-12 rounded-xl text-[14px] font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all duration-200 disabled:opacity-50 shadow-lg shadow-violet-600/20"
+        >
+          {status === "loading" ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Enviando...</>
+          ) : (
+            <><Send className="mr-2 h-4 w-4" />Procesar Publicación</>
+          )}
+        </Button>
       </div>
     </div>
   );

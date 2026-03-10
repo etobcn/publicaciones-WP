@@ -1,18 +1,12 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Bot, Send, Loader2, ExternalLink, Youtube, FolderOpen } from "lucide-react";
+import { Bot, Send, Loader2, ExternalLink, Youtube, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
 import DarkInput from "@/components/shared/DarkInput";
-
-const MOCK_NEWS = `<h3>Noticias Relacionadas</h3>
-<p><strong>1. El Economista</strong> — "La empresa recibe el galardón por su trayectoria innovadora en el sector sanitario, destacando su compromiso con la investigación y el desarrollo."</p>
-<br/>
-<p><strong>2. Expansión</strong> — "El jurado ha reconocido la labor de la compañía en materia de sostenibilidad y responsabilidad social corporativa durante la última década."</p>
-<br/>
-<p><strong>3. ABC Economía</strong> — "Tercera edición consecutiva en la que la firma se posiciona entre los finalistas del certamen, consolidando su liderazgo en el mercado ibérico."</p>`;
 
 export default function Premios() {
   const [form, setForm] = useState({
@@ -22,44 +16,69 @@ export default function Premios() {
   });
   const [noticias, setNoticias] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchError, setSearchError] = useState("");
 
-  const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  const [publishStatus, setPublishStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  const [publishError, setPublishError] = useState("");
 
-  const handleSearchNews = () => {
+  const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleSearchNews = async () => {
     setIsSearching(true);
-    setTimeout(() => {
-      setNoticias(MOCK_NEWS);
+    setSearchError("");
+    try {
+      const response = await base44.functions.invoke("webhookPremiosNoticias", {
+        premio: form.nombre_premio,
+      });
+      if (response.data?.html) {
+        setNoticias(response.data.html);
+      } else if (response.data?.error) {
+        setSearchError(response.data.error);
+      }
+    } catch (err) {
+      setSearchError(err.message || "Error al buscar noticias");
+    } finally {
       setIsSearching(false);
-    }, 2500);
+    }
   };
 
-  const handleSubmit = () => {
-    setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 2000);
+  const handleSubmit = async () => {
+    setPublishStatus("loading");
+    setPublishError("");
+    try {
+      const response = await base44.functions.invoke("webhookPremiosPublicar", {
+        premio: form.nombre_premio,
+        youtube_url: form.enlace_video,
+        drive_url: form.enlace_drive,
+        noticias_html: noticias,
+      });
+      if (response.data?.success) {
+        setPublishStatus("success");
+      } else {
+        setPublishError(response.data?.error || "Error desconocido");
+        setPublishStatus("error");
+      }
+    } catch (err) {
+      setPublishError(err.message || "Error al conectar con el servidor");
+      setPublishStatus("error");
+    }
   };
 
   return (
     <div className="px-8 py-8 max-w-3xl mx-auto">
-      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="mb-8"
       >
-        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">
-          Gestión de Premios
-        </h1>
+        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">Gestión de Premios</h1>
         <p className="mt-1 text-[13px] text-white/35">
           Registra los datos del evento y genera noticias con asistencia de IA.
         </p>
       </motion.div>
 
       <div className="space-y-5">
-        {/* Datos del Evento */}
         <FormCard title="Datos del Evento">
           <div className="space-y-4">
             <DarkInput
@@ -78,15 +97,9 @@ export default function Premios() {
                   onChange={(e) => updateField("enlace_video", e.target.value)}
                 />
                 {form.enlace_video && (
-                  <a
-                    href={form.enlace_video}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors"
-                  >
-                    <Youtube className="h-3 w-3" />
-                    Ver vídeo
-                    <ExternalLink className="h-2.5 w-2.5" />
+                  <a href={form.enlace_video} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors">
+                    <Youtube className="h-3 w-3" />Ver vídeo<ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 )}
               </div>
@@ -99,15 +112,9 @@ export default function Premios() {
                   onChange={(e) => updateField("enlace_drive", e.target.value)}
                 />
                 {form.enlace_drive && (
-                  <a
-                    href={form.enlace_drive}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors"
-                  >
-                    <FolderOpen className="h-3 w-3" />
-                    Abrir carpeta
-                    <ExternalLink className="h-2.5 w-2.5" />
+                  <a href={form.enlace_drive} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors">
+                    <FolderOpen className="h-3 w-3" />Abrir carpeta<ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 )}
               </div>
@@ -115,34 +122,21 @@ export default function Premios() {
           </div>
         </FormCard>
 
-        {/* Módulo de Noticias */}
         <FormCard title="Módulo de Noticias" description="Genera noticias relacionadas con el premio usando IA.">
           <div className="space-y-4">
             <Button
               variant="outline"
               onClick={handleSearchNews}
-              disabled={isSearching}
-              className="
-                h-10 rounded-lg border-white/[0.08] bg-white/[0.03]
-                text-[13px] text-white/70 hover:text-white hover:bg-white/[0.06]
-                hover:border-violet-500/30 transition-all duration-200
-                disabled:opacity-50 disabled:cursor-not-allowed
-              "
+              disabled={isSearching || !form.nombre_premio}
+              className="h-10 rounded-lg border-white/[0.08] bg-white/[0.03] text-[13px] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSearching ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-violet-400" />
-                  Buscando noticias...
-                </>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin text-violet-400" />Buscando noticias...</>
               ) : (
-                <>
-                  <Bot className="mr-2 h-4 w-4 text-violet-400" />
-                  🤖 Buscar Noticias Relacionadas con IA
-                </>
+                <><Bot className="mr-2 h-4 w-4 text-violet-400" />🤖 Buscar Noticias Relacionadas con IA</>
               )}
             </Button>
 
-            {/* Search animation */}
             {isSearching && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -151,21 +145,23 @@ export default function Premios() {
               >
                 <div className="flex gap-1">
                   {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="h-1.5 w-1.5 rounded-full bg-violet-400"
+                    <motion.div key={i} className="h-1.5 w-1.5 rounded-full bg-violet-400"
                       animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.2, delay: i * 0.2, repeat: Infinity }}
                     />
                   ))}
                 </div>
-                <span className="text-[12px] text-violet-300/70">
-                  Analizando fuentes y generando noticias relevantes...
-                </span>
+                <span className="text-[12px] text-violet-300/70">Analizando fuentes y generando noticias relevantes...</span>
               </motion.div>
             )}
 
-            {/* Rich Text Editor */}
+            {searchError && (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-500/[0.08] border border-red-500/[0.2]">
+                <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+                <span className="text-[12px] text-red-300">{searchError}</span>
+              </div>
+            )}
+
             <div className="rounded-lg overflow-hidden border border-white/[0.06]">
               <ReactQuill
                 theme="snow"
@@ -186,36 +182,32 @@ export default function Premios() {
           </div>
         </FormCard>
 
-        {/* Submit */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+        {publishStatus === "success" && (
+          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/[0.2]">
+            <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span className="text-[13px] text-emerald-300">Evento publicado con éxito.</span>
+          </motion.div>
+        )}
+        {publishStatus === "error" && (
+          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/[0.08] border border-red-500/[0.2]">
+            <AlertCircle className="h-4 w-4 text-red-400 shrink-0" />
+            <span className="text-[13px] text-red-300">{publishError || "Ha ocurrido un error. Inténtalo de nuevo."}</span>
+          </motion.div>
+        )}
+
+        <Button
+          onClick={handleSubmit}
+          disabled={publishStatus === "loading"}
+          className="w-full h-12 rounded-xl text-[14px] font-semibold bg-violet-600 hover:bg-violet-500 text-white transition-all duration-200 disabled:opacity-50 shadow-lg shadow-violet-600/20"
         >
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="
-              w-full h-12 rounded-xl text-[14px] font-semibold
-              bg-violet-600 hover:bg-violet-500 text-white
-              transition-all duration-200
-              disabled:opacity-50 disabled:cursor-not-allowed
-              shadow-lg shadow-violet-600/20
-            "
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Publicando...
-              </>
-            ) : (
-              <>
-                <Send className="mr-2 h-4 w-4" />
-                Publicar Evento de Premio
-              </>
-            )}
-          </Button>
-        </motion.div>
+          {publishStatus === "loading" ? (
+            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Publicando...</>
+          ) : (
+            <><Send className="mr-2 h-4 w-4" />Publicar Evento de Premio</>
+          )}
+        </Button>
       </div>
     </div>
   );
