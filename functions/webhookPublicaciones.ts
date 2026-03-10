@@ -9,12 +9,12 @@ Deno.serve(async (req) => {
     const webhookUrl = Deno.env.get("WEBHOOK_PUBLICACIONES");
     if (!webhookUrl) return Response.json({ error: 'Webhook no configurado' }, { status: 500 });
 
-    // Forward the multipart FormData directly to n8n
-    const formData = await req.formData();
+    const body = await req.json();
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {

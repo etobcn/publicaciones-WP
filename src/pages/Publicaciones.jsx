@@ -33,23 +33,31 @@ export default function Publicaciones() {
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
+  const uploadFile = async (file) => {
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    return file_url;
+  };
+
   const handleSubmit = async () => {
     setStatus("loading");
     setErrorMsg("");
 
-    const formData = new FormData();
-    formData.append("nombre_empresa", form.nombre_empresa);
-    formData.append("fecha", form.fecha);
-    formData.append("medio", form.medio);
-    formData.append("formato", form.formato);
-    formData.append("enlaces", String(form.enlaces));
-    formData.append("premio", form.premio);
-
-    wordFiles.forEach((file) => formData.append("documento_word", file));
-    mediaFiles.forEach((file) => formData.append("imagenes", file));
-
     try {
-      const response = await base44.functions.invoke("webhookPublicaciones", formData);
+      // Upload files and get URLs
+      const wordUrls = await Promise.all(wordFiles.map(uploadFile));
+      const mediaUrls = await Promise.all(mediaFiles.map(uploadFile));
+
+      const response = await base44.functions.invoke("webhookPublicaciones", {
+        nombre_empresa: form.nombre_empresa,
+        fecha: form.fecha,
+        medio: form.medio,
+        formato: form.formato,
+        enlaces: form.enlaces,
+        premio: form.premio,
+        documento_word_urls: wordUrls,
+        imagenes_urls: mediaUrls,
+      });
+
       if (response.data?.success) {
         setStatus("success");
       } else {
