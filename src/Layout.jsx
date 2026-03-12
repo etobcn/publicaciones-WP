@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Newspaper, Award, Zap } from "lucide-react";
+import { Newspaper, Award, Zap, ClipboardList } from "lucide-react";
 
 const navItems = [
   { name: "Publicaciones", page: "Publicaciones", icon: Newspaper },
   { name: "Premios", page: "Premios", icon: Award },
+  { name: "Envíos", page: "Envios", icon: ClipboardList },
 ];
 
 export default function Layout({ children, currentPageName }) {
