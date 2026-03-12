@@ -46,12 +46,24 @@ export default function Premios() {
     setPublishStatus("loading");
     setPublishError("");
     try {
-      const response = await base44.functions.invoke("webhookPremiosPublicar", {
+      const payload = {
         premio: form.nombre_premio,
         youtube_url: form.enlace_video,
         drive_url: form.enlace_drive,
         noticias_html: noticias,
+      };
+      const response = await base44.functions.invoke("webhookPremiosPublicar", payload);
+
+      // Guardar registro del envío
+      await base44.entities.Envio.create({
+        tipo: "premio",
+        fecha_envio: new Date().toISOString(),
+        nombre_premio: form.nombre_premio,
+        youtube_url: form.enlace_video,
+        drive_url: form.enlace_drive,
+        status: response.data?.success ? "enviado" : "error",
       });
+
       if (response.data?.success) {
         setPublishStatus("success");
       } else {

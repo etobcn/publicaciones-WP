@@ -47,7 +47,7 @@ export default function Publicaciones() {
       const wordUrls = await Promise.all(wordFiles.map(uploadFile));
       const mediaUrls = await Promise.all(mediaFiles.map(uploadFile));
 
-      const response = await base44.functions.invoke("webhookPublicaciones", {
+      const payload = {
         nombre_empresa: form.nombre_empresa,
         fecha: form.fecha,
         medio: form.medio,
@@ -56,6 +56,16 @@ export default function Publicaciones() {
         premio: form.premio,
         documento_word_urls: wordUrls,
         imagenes_urls: mediaUrls,
+      };
+
+      const response = await base44.functions.invoke("webhookPublicaciones", payload);
+
+      // Guardar registro del envío
+      await base44.entities.Envio.create({
+        tipo: "publicacion",
+        fecha_envio: new Date().toISOString(),
+        ...payload,
+        status: response.data?.success ? "enviado" : "error",
       });
 
       if (response.data?.success) {
