@@ -18,6 +18,7 @@ export default function DarkInput({ label, optional, id, ...props }) {
           text-[13px] text-white/90 placeholder:text-white/25
           focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/20
           transition-all duration-200
+          [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-50
           ${props.className || ""}
         `}
       />
