@@ -1,9 +1,5 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-
     const webhookUrl = Deno.env.get("WEBHOOK_PUBLICACIONES");
     if (!webhookUrl) return Response.json({ error: 'Webhook no configurado' }, { status: 500 });
 
