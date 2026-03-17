@@ -133,9 +133,12 @@ export default function Envios() {
                   </div>
                 </div>
 
-                <span className="shrink-0 text-[11px] text-white/25">
-                  {envio.fecha_envio ? format(new Date(envio.fecha_envio), "d MMM yyyy, HH:mm", { locale: es }) : "—"}
-                </span>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-[11px] text-white/25">
+                    {envio.fecha_envio ? format(new Date(envio.fecha_envio), "d MMM yyyy, HH:mm", { locale: es }) : "—"}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-white/20" />
+                </div>
               </div>
             </motion.div>
           ))}
