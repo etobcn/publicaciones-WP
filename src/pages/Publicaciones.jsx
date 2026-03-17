@@ -79,6 +79,7 @@ export default function Publicaciones() {
       }
 
       // Guardar registro del envío siempre, independientemente del resultado del webhook
+      console.log("DEBUG fecha antes de crear:", form.fecha, typeof form.fecha);
       await base44.entities.Envio.create({
         tipo: "publicacion",
         fecha_envio: new Date().toISOString(),
