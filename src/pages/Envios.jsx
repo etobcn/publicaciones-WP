@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, AlertCircle, Newspaper, Award, ExternalLink } from "lucide-react";
+import { CheckCircle, AlertCircle, Newspaper, Award, ExternalLink, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import EnvioDetalle from "@/components/envios/EnvioDetalle";
 
 export default function Envios() {
   const [filtroTipo, setFiltroTipo] = useState("todos");
