@@ -1,8 +1,9 @@
 import React from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { X, ExternalLink, Newspaper, Award, CheckCircle, AlertCircle, Calendar, FileText, Image } from "lucide-react";
+import { X, ExternalLink, Newspaper, Award, CheckCircle, AlertCircle, Calendar, FileText, Image, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function EnvioDetalle({ envio, onClose }) {
   if (!envio) return null;
