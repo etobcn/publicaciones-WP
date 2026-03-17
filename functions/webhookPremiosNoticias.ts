@@ -6,25 +6,39 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const webhookUrl = Deno.env.get("WEBHOOK_PREMIOS_NOTICIAS");
-    if (!webhookUrl) return Response.json({ error: 'Webhook no configurado' }, { status: 500 });
-
     const { premio } = await req.json();
+    if (!premio) return Response.json({ error: 'Falta el nombre del premio' }, { status: 400 });
 
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ premio }),
+    const result = await base44.integrations.Core.InvokeLLM({
+      model: 'gemini_3_flash',
+      add_context_from_internet: true,
+      prompt: `Busca en internet noticias reales y recientes relacionadas con: "${premio}".
+Encuentra hasta 6 noticias distintas. Para cada una extrae exactamente:
+- titulo: El titular de la noticia
+- texto: Un resumen muy breve (2-3 líneas máximo)
+- link: La URL real y directa de la noticia
+
+Devuelve ÚNICAMENTE el array JSON sin ningún texto adicional, markdown ni bloques de código. Si encuentras menos de 6 noticias, devuelve solo las que encuentres.`,
+      response_json_schema: {
+        type: 'object',
+        properties: {
+          noticias: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                titulo: { type: 'string' },
+                texto: { type: 'string' },
+                link: { type: 'string' }
+              }
+            }
+          }
+        }
+      }
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      return Response.json({ error: `Error del webhook: ${response.status}`, detail: text }, { status: 502 });
-    }
-
-    // The webhook returns HTML/text for the news editor
-    const html = await response.text();
-    return Response.json({ html });
+    const noticias = result?.noticias || [];
+    return Response.json({ noticias });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

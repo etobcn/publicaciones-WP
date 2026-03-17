@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Bot, Send, Loader2, ExternalLink, Youtube, CheckCircle, AlertCircle, Link } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bot, Send, Loader2, ExternalLink, Youtube, CheckCircle, AlertCircle, Link, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
 import DarkInput from "@/components/shared/DarkInput";
 import FileDropZone from "@/components/shared/FileDropZone";
+
+const EMPTY_NOTICIA = { titulo: "", texto: "", link: "" };
+const MAX_NOTICIAS = 6;
 
 export default function Premios() {
   const [form, setForm] = useState({
@@ -15,7 +16,10 @@ export default function Premios() {
     enlace_video: "",
     noticia_premio: "",
   });
-  const [noticias, setNoticias] = useState("");
+
+  // Array de hasta 6 noticias estructuradas
+  const [noticias, setNoticias] = useState(Array(MAX_NOTICIAS).fill(null).map(() => ({ ...EMPTY_NOTICIA })));
+
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 
@@ -29,6 +33,14 @@ export default function Premios() {
   const [publishError, setPublishError] = useState("");
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const updateNoticia = (index, field, value) => {
+    setNoticias((prev) => prev.map((n, i) => i === index ? { ...n, [field]: value } : n));
+  };
+
+  const clearNoticia = (index) => {
+    setNoticias((prev) => prev.map((n, i) => i === index ? { ...EMPTY_NOTICIA } : n));
+  };
 
   const uploadFiles = async (files) => {
     const urls = [];
@@ -46,8 +58,11 @@ export default function Premios() {
       const response = await base44.functions.invoke("webhookPremiosNoticias", {
         premio: form.nombre_premio,
       });
-      if (response.data?.html) {
-        setNoticias(response.data.html);
+      if (response.data?.noticias) {
+        const found = response.data.noticias.slice(0, MAX_NOTICIAS);
+        setNoticias(
+          Array(MAX_NOTICIAS).fill(null).map((_, i) => found[i] ? { ...found[i] } : { ...EMPTY_NOTICIA })
+        );
       } else if (response.data?.error) {
         setSearchError(response.data.error);
       }
@@ -62,7 +77,6 @@ export default function Premios() {
     setPublishStatus("loading");
     setPublishError("");
     try {
-      // Subir archivos adjuntos
       const [imgDestacadaUrls, imgCabeceraUrls, noticiaPapelUrls, autopublicidadUrls] = await Promise.all([
         uploadFiles(imagenDestacada),
         uploadFiles(imagenCabecera),
@@ -70,15 +84,24 @@ export default function Premios() {
         uploadFiles(autopublicidad),
       ]);
 
+      // Mapeo plano para WordPress/n8n
+      const noticiasPlanas = {};
+      noticias.forEach((n, i) => {
+        const num = i + 1;
+        noticiasPlanas[`premio_noticias_titulo_${num}`] = n.titulo || "";
+        noticiasPlanas[`premio_noticias_texto_${num}`] = n.texto || "";
+        noticiasPlanas[`premio_noticias_link_${num}`] = n.link || "";
+      });
+
       const payload = {
         premio: form.nombre_premio,
         youtube_url: form.enlace_video,
         noticia_premio_url: form.noticia_premio,
-        noticias_html: noticias,
         imagen_destacada_urls: imgDestacadaUrls,
         imagen_cabecera_urls: imgCabeceraUrls,
         noticia_papel_urls: noticiaPapelUrls,
         autopublicidad_urls: autopublicidadUrls,
+        ...noticiasPlanas,
       };
 
       const response = await base44.functions.invoke("webhookPremiosPublicar", payload);
@@ -103,6 +126,8 @@ export default function Premios() {
     }
   };
 
+  const hasNoticias = noticias.some((n) => n.titulo || n.texto || n.link);
+
   return (
     <div className="px-8 py-8 max-w-3xl mx-auto">
       <motion.div
@@ -118,6 +143,7 @@ export default function Premios() {
       </motion.div>
 
       <div className="space-y-5">
+        {/* Datos del Evento */}
         <FormCard title="Datos del Evento">
           <div className="space-y-4">
             <DarkInput
@@ -161,36 +187,18 @@ export default function Premios() {
           </div>
         </FormCard>
 
+        {/* Adjuntos */}
         <FormCard title="Adjuntos">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FileDropZone
-              label="Imagen Destacada"
-              accept="image/*"
-              files={imagenDestacada}
-              onFilesChange={setImagenDestacada}
-            />
-            <FileDropZone
-              label="Imagen Cabecera"
-              accept="image/*"
-              files={imagenCabecera}
-              onFilesChange={setImagenCabecera}
-            />
-            <FileDropZone
-              label="Noticia Papel"
-              accept="image/*,.pdf"
-              files={noticiaPapel}
-              onFilesChange={setNoticiaPapel}
-            />
-            <FileDropZone
-              label="Autopublicidad"
-              accept="image/*,.pdf"
-              files={autopublicidad}
-              onFilesChange={setAutopublicidad}
-            />
+            <FileDropZone label="Imagen Destacada" accept="image/*" files={imagenDestacada} onFilesChange={setImagenDestacada} />
+            <FileDropZone label="Imagen Cabecera" accept="image/*" files={imagenCabecera} onFilesChange={setImagenCabecera} />
+            <FileDropZone label="Noticia Papel" accept="image/*,.pdf" files={noticiaPapel} onFilesChange={setNoticiaPapel} />
+            <FileDropZone label="Autopublicidad" accept="image/*,.pdf" files={autopublicidad} onFilesChange={setAutopublicidad} />
           </div>
         </FormCard>
 
-        <FormCard title="Módulo de Noticias" description="Genera noticias relacionadas con el premio usando IA.">
+        {/* Módulo de Noticias */}
+        <FormCard title="Módulo de Noticias" description="Busca noticias relacionadas con el premio usando IA con acceso a internet.">
           <div className="space-y-4">
             <Button
               variant="outline"
@@ -206,20 +214,16 @@ export default function Premios() {
             </Button>
 
             {isSearching && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-violet-500/[0.06] border border-violet-500/[0.12]"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-violet-500/[0.06] border border-violet-500/[0.12]">
                 <div className="flex gap-1">
                   {[0, 1, 2].map((i) => (
                     <motion.div key={i} className="h-1.5 w-1.5 rounded-full bg-violet-400"
                       animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.2, delay: i * 0.2, repeat: Infinity }}
-                    />
+                      transition={{ duration: 1.2, delay: i * 0.2, repeat: Infinity }} />
                   ))}
                 </div>
-                <span className="text-[12px] text-violet-300/70">Analizando fuentes y generando noticias relevantes...</span>
+                <span className="text-[12px] text-violet-300/70">Buscando en internet noticias relevantes...</span>
               </motion.div>
             )}
 
@@ -230,22 +234,17 @@ export default function Premios() {
               </div>
             )}
 
-            <div className="rounded-lg overflow-hidden border border-white/[0.06]">
-              <ReactQuill
-                theme="snow"
-                value={noticias}
-                onChange={setNoticias}
-                placeholder="Las noticias generadas aparecerán aquí..."
-                modules={{
-                  toolbar: [
-                    [{ header: [1, 2, 3, false] }],
-                    ["bold", "italic", "underline"],
-                    [{ list: "ordered" }, { list: "bullet" }],
-                    ["link"],
-                    ["clean"],
-                  ],
-                }}
-              />
+            {/* Bloques de noticias */}
+            <div className="space-y-3">
+              {noticias.map((noticia, i) => (
+                <NoticiaBlock
+                  key={i}
+                  index={i}
+                  noticia={noticia}
+                  onChange={(field, value) => updateNoticia(i, field, value)}
+                  onClear={() => clearNoticia(i)}
+                />
+              ))}
             </div>
           </div>
         </FormCard>
@@ -276,6 +275,55 @@ export default function Premios() {
             <><Send className="mr-2 h-4 w-4" />Publicar Evento de Premio</>
           )}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function NoticiaBlock({ index, noticia, onChange, onClear }) {
+  const isEmpty = !noticia.titulo && !noticia.texto && !noticia.link;
+
+  return (
+    <div className={`rounded-lg border transition-all duration-200 ${isEmpty ? "border-white/[0.04] bg-white/[0.01]" : "border-white/[0.08] bg-white/[0.03]"}`}>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.05]">
+        <span className="text-[11px] font-medium text-white/30">Noticia {index + 1}</span>
+        {!isEmpty && (
+          <button onClick={onClear} className="p-1 rounded hover:bg-white/[0.06] transition-colors">
+            <X className="h-3 w-3 text-white/25 hover:text-white/50" />
+          </button>
+        )}
+      </div>
+      <div className="p-3 space-y-2">
+        <input
+          type="text"
+          placeholder="Titular de la noticia..."
+          value={noticia.titulo}
+          onChange={(e) => onChange("titulo", e.target.value)}
+          className="w-full bg-transparent border-0 outline-none text-[12px] font-medium text-white/70 placeholder:text-white/20"
+        />
+        <textarea
+          placeholder="Resumen breve..."
+          value={noticia.texto}
+          onChange={(e) => onChange("texto", e.target.value)}
+          rows={2}
+          className="w-full bg-transparent border-0 outline-none text-[12px] text-white/50 placeholder:text-white/20 resize-none"
+        />
+        <div className="flex items-center gap-1.5">
+          <Link className="h-3 w-3 text-white/20 shrink-0" />
+          <input
+            type="url"
+            placeholder="https://..."
+            value={noticia.link}
+            onChange={(e) => onChange("link", e.target.value)}
+            className="flex-1 bg-transparent border-0 outline-none text-[11px] text-violet-400/60 placeholder:text-white/20"
+          />
+          {noticia.link && (
+            <a href={noticia.link} target="_blank" rel="noopener noreferrer"
+              className="shrink-0 text-violet-400/50 hover:text-violet-400 transition-colors">
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

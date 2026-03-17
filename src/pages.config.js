@@ -47,12 +47,14 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import Envios from './pages/Envios';
 import Premios from './pages/Premios';
 import Publicaciones from './pages/Publicaciones';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "Envios": Envios,
     "Premios": Premios,
     "Publicaciones": Publicaciones,
 }
