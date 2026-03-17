@@ -8,6 +8,7 @@ import DarkInput from "@/components/shared/DarkInput";
 import DarkSelect from "@/components/shared/DarkSelect";
 import ToggleSwitch from "@/components/shared/ToggleSwitch";
 import FileDropZone from "@/components/shared/FileDropZone";
+import { useLocation } from "react-router-dom";
 
 const MEDIOS = [
   "A Tu Salud", "ABC", "Actualidad Económica", "Economista",
