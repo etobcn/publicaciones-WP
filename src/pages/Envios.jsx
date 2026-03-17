@@ -21,6 +21,7 @@ export default function Envios() {
   const filtrados = filtroTipo === "todos" ? envios : envios.filter((e) => e.tipo === filtroTipo);
 
   return (
+    <>
     <div className="px-8 py-8 max-w-4xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: -8 }}
