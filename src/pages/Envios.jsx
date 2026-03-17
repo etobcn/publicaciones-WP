@@ -11,6 +11,7 @@ import EnvioDetalle from "@/components/envios/EnvioDetalle";
 
 export default function Envios() {
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [envioSeleccionado, setEnvioSeleccionado] = useState(null);
 
   const { data: envios = [], isLoading } = useQuery({
     queryKey: ["envios"],
