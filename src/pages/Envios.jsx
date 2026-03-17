@@ -145,7 +145,7 @@ export default function Envios() {
         </div>
       )}
     </div>
-
       <EnvioDetalle envio={envioSeleccionado} onClose={() => setEnvioSeleccionado(null)} />
+    </>
   );
 }
