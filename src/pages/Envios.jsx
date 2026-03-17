@@ -96,7 +96,7 @@ export default function Envios() {
                         {envio.formato && <span className="text-[12px] text-white/40">{envio.formato}</span>}
                         {envio.fecha_publicacion && (
                           <span className="text-[12px] text-white/40">
-                            📅 {format(new Date(envio.fecha_publicacion), "d MMM yyyy", { locale: es })}
+                            📅 {format(parseISO(envio.fecha_publicacion), "d MMM yyyy", { locale: es })}
                           </span>
                         )}
                         {envio.premio && <span className="text-[12px] text-violet-400/60">🏆 {envio.premio}</span>}
