@@ -22,11 +22,11 @@ export default function EnvioDetalle({ envio, onClose }) {
 
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return "—";
-    // Si es solo fecha (YYYY-MM-DD) parseamos sin timezone
-    if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
-      return format(parseISO(fechaStr), "d MMM yyyy", { locale: es });
-    }
-    return format(new Date(fechaStr), "d MMM yyyy", { locale: es });
+    // Extraemos solo la parte YYYY-MM-DD para evitar problemas de timezone
+    const soloFecha = String(fechaStr).slice(0, 10);
+    const [year, month, day] = soloFecha.split("-").map(Number);
+    if (!year || !month || !day) return "—";
+    return format(new Date(year, month - 1, day), "d MMM yyyy", { locale: es });
   };
 
   return (
