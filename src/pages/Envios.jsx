@@ -63,7 +63,7 @@ export default function Envios() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: i * 0.03 }}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 hover:bg-white/[0.03] transition-colors"
+              className="rounded-xl border border-white/[0.10] bg-white/[0.04] p-5 hover:bg-white/[0.06] transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">

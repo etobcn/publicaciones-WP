@@ -64,6 +64,7 @@ export default function Publicaciones() {
       await base44.entities.Envio.create({
         tipo: "publicacion",
         fecha_envio: new Date().toISOString(),
+        fecha_publicacion: form.fecha,
         ...payload,
         status: response.data?.success ? "enviado" : "error",
       });
