@@ -22,9 +22,15 @@ export default function Publicaciones() {
   const location = useLocation();
   const reenvio = location.state?.reenvio;
 
+  // Normaliza la fecha a YYYY-MM-DD para el input type="date"
+  const normalizarFecha = (f) => {
+    if (!f) return "";
+    return String(f).slice(0, 10);
+  };
+
   const [form, setForm] = useState({
     nombre_empresa: reenvio?.nombre_empresa || "",
-    fecha: reenvio?.fecha_publicacion || "",
+    fecha: normalizarFecha(reenvio?.fecha_publicacion),
     medio: reenvio?.medio || "",
     formato: reenvio?.formato || "",
     enlaces: reenvio?.enlaces || false,
