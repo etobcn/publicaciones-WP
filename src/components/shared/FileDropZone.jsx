@@ -2,9 +2,10 @@ import React, { useState, useRef } from "react";
 import { Upload, FileText, Image, X, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function FileDropZone({ label, hint, icon: Icon = Upload, accept, multiple = false, onFilesChange }) {
+export default function FileDropZone({ label, hint, icon: Icon = Upload, accept, multiple = false, onFilesChange, files: externalFiles }) {
   const [isDragging, setIsDragging] = useState(false);
-  const [files, setFiles] = useState([]);
+  const [internalFiles, setInternalFiles] = useState([]);
+  const files = externalFiles !== undefined ? externalFiles : internalFiles;
   const inputRef = useRef(null);
 
   const handleDrag = (e) => {
@@ -34,13 +35,13 @@ export default function FileDropZone({ label, hint, icon: Icon = Upload, accept,
 
   const addFiles = (newFiles) => {
     const updated = multiple ? [...files, ...newFiles] : newFiles.slice(0, 1);
-    setFiles(updated);
+    if (externalFiles === undefined) setInternalFiles(updated);
     onFilesChange?.(updated);
   };
 
   const removeFile = (index) => {
     const updated = files.filter((_, i) => i !== index);
-    setFiles(updated);
+    if (externalFiles === undefined) setInternalFiles(updated);
     onFilesChange?.(updated);
   };
 
