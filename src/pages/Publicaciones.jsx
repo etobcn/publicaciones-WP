@@ -68,9 +68,17 @@ export default function Publicaciones() {
         imagenes_urls: mediaUrls,
       };
 
-      const response = await base44.functions.invoke("webhookPublicaciones", payload);
+      let webhookSuccess = false;
+      let webhookError = "";
+      try {
+        const response = await base44.functions.invoke("webhookPublicaciones", payload);
+        webhookSuccess = response.data?.success ?? true;
+        webhookError = response.data?.error || "Error desconocido";
+      } catch (webhookErr) {
+        webhookError = webhookErr.message || "Error al conectar con el webhook";
+      }
 
-      // Guardar registro del envío
+      // Guardar registro del envío siempre, independientemente del resultado del webhook
       await base44.entities.Envio.create({
         tipo: "publicacion",
         fecha_envio: new Date().toISOString(),
@@ -82,13 +90,13 @@ export default function Publicaciones() {
         premio: form.premio,
         documento_word_urls: wordUrls,
         imagenes_urls: mediaUrls,
-        status: response.data?.success ? "enviado" : "error",
+        status: webhookSuccess ? "enviado" : "error",
       });
 
-      if (response.data?.success) {
+      if (webhookSuccess) {
         setStatus("success");
       } else {
-        setErrorMsg(response.data?.error || "Error desconocido");
+        setErrorMsg(webhookError);
         setStatus("error");
       }
     } catch (err) {
