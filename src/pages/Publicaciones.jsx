@@ -99,9 +99,13 @@ export default function Publicaciones() {
         transition={{ duration: 0.3 }}
         className="mb-8"
       >
-        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">Nueva Publicación</h1>
+        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">
+          {reenvio ? "Reenviar Publicación" : "Nueva Publicación"}
+        </h1>
         <p className="mt-1 text-[13px] text-white/35">
-          Completa los datos y sube los archivos para procesar la publicación.
+          {reenvio
+            ? "Los campos se han rellenado con los datos del envío anterior. Sube de nuevo los archivos y envía."
+            : "Completa los datos y sube los archivos para procesar la publicación."}
         </p>
       </motion.div>
 
