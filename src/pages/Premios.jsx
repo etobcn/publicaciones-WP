@@ -1,27 +1,43 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Bot, Send, Loader2, ExternalLink, Youtube, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
+import { Bot, Send, Loader2, ExternalLink, Youtube, CheckCircle, AlertCircle, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
 import DarkInput from "@/components/shared/DarkInput";
+import FileDropZone from "@/components/shared/FileDropZone";
 
 export default function Premios() {
   const [form, setForm] = useState({
     nombre_premio: "",
     enlace_video: "",
-    enlace_drive: "",
+    noticia_premio: "",
   });
   const [noticias, setNoticias] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
 
-  const [publishStatus, setPublishStatus] = useState(null); // null | 'loading' | 'success' | 'error'
+  // Adjuntos
+  const [imagenDestacada, setImagenDestacada] = useState([]);
+  const [imagenCabecera, setImagenCabecera] = useState([]);
+  const [noticiaPapel, setNoticiaPapel] = useState([]);
+  const [autopublicidad, setAutopublicidad] = useState([]);
+
+  const [publishStatus, setPublishStatus] = useState(null);
   const [publishError, setPublishError] = useState("");
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const uploadFiles = async (files) => {
+    const urls = [];
+    for (const file of files) {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      urls.push(file_url);
+    }
+    return urls;
+  };
 
   const handleSearchNews = async () => {
     setIsSearching(true);
@@ -46,21 +62,32 @@ export default function Premios() {
     setPublishStatus("loading");
     setPublishError("");
     try {
+      // Subir archivos adjuntos
+      const [imgDestacadaUrls, imgCabeceraUrls, noticiaPapelUrls, autopublicidadUrls] = await Promise.all([
+        uploadFiles(imagenDestacada),
+        uploadFiles(imagenCabecera),
+        uploadFiles(noticiaPapel),
+        uploadFiles(autopublicidad),
+      ]);
+
       const payload = {
         premio: form.nombre_premio,
         youtube_url: form.enlace_video,
-        drive_url: form.enlace_drive,
+        noticia_premio_url: form.noticia_premio,
         noticias_html: noticias,
+        imagen_destacada_urls: imgDestacadaUrls,
+        imagen_cabecera_urls: imgCabeceraUrls,
+        noticia_papel_urls: noticiaPapelUrls,
+        autopublicidad_urls: autopublicidadUrls,
       };
+
       const response = await base44.functions.invoke("webhookPremiosPublicar", payload);
 
-      // Guardar registro del envío
       await base44.entities.Envio.create({
         tipo: "premio",
         fecha_envio: new Date().toISOString(),
         nombre_premio: form.nombre_premio,
         youtube_url: form.enlace_video,
-        drive_url: form.enlace_drive,
         status: response.data?.success ? "enviado" : "error",
       });
 
@@ -117,20 +144,49 @@ export default function Premios() {
               </div>
               <div className="space-y-2">
                 <DarkInput
-                  label="Carpeta de Google Drive"
-                  placeholder="https://drive.google.com/..."
+                  label="Noticia Premio"
+                  placeholder="https://..."
                   type="url"
-                  value={form.enlace_drive}
-                  onChange={(e) => updateField("enlace_drive", e.target.value)}
+                  value={form.noticia_premio}
+                  onChange={(e) => updateField("noticia_premio", e.target.value)}
                 />
-                {form.enlace_drive && (
-                  <a href={form.enlace_drive} target="_blank" rel="noopener noreferrer"
+                {form.noticia_premio && (
+                  <a href={form.noticia_premio} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-[11px] text-violet-400/70 hover:text-violet-400 transition-colors">
-                    <FolderOpen className="h-3 w-3" />Abrir carpeta<ExternalLink className="h-2.5 w-2.5" />
+                    <Link className="h-3 w-3" />Ver noticia<ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 )}
               </div>
             </div>
+          </div>
+        </FormCard>
+
+        <FormCard title="Adjuntos">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FileDropZone
+              label="Imagen Destacada"
+              accept="image/*"
+              files={imagenDestacada}
+              onFilesChange={setImagenDestacada}
+            />
+            <FileDropZone
+              label="Imagen Cabecera"
+              accept="image/*"
+              files={imagenCabecera}
+              onFilesChange={setImagenCabecera}
+            />
+            <FileDropZone
+              label="Noticia Papel"
+              accept="image/*,.pdf"
+              files={noticiaPapel}
+              onFilesChange={setNoticiaPapel}
+            />
+            <FileDropZone
+              label="Autopublicidad"
+              accept="image/*,.pdf"
+              files={autopublicidad}
+              onFilesChange={setAutopublicidad}
+            />
           </div>
         </FormCard>
 
