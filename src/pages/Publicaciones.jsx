@@ -53,6 +53,7 @@ export default function Publicaciones() {
     setErrorMsg("");
 
     try {
+      console.log("form.fecha al enviar:", form.fecha);
       // Upload files and get URLs
       const wordUrls = await Promise.all(wordFiles.map(uploadFile));
       const mediaUrls = await Promise.all(mediaFiles.map(uploadFile));
