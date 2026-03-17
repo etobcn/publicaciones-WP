@@ -64,8 +64,14 @@ export default function Publicaciones() {
       await base44.entities.Envio.create({
         tipo: "publicacion",
         fecha_envio: new Date().toISOString(),
+        nombre_empresa: form.nombre_empresa,
         fecha_publicacion: form.fecha,
-        ...payload,
+        medio: form.medio,
+        formato: form.formato,
+        enlaces: form.enlaces,
+        premio: form.premio,
+        documento_word_urls: wordUrls,
+        imagenes_urls: mediaUrls,
         status: response.data?.success ? "enviado" : "error",
       });
 
