@@ -7,7 +7,7 @@ export default function FormCard({ title, description, children, className = "" 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
-      className={`rounded-xl border border-white/[0.06] bg-[#111113] p-6 ${className}`}
+      className={`rounded-xl border border-white/[0.12] bg-white/[0.04] p-6 ${className}`}
     >
       {(title || description) && (
         <div className="mb-5">
