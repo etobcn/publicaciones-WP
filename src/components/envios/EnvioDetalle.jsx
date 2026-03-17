@@ -78,7 +78,7 @@ export default function EnvioDetalle({ envio, onClose }) {
 
             {isPub && (
               <>
-                <Row label="Fecha de publicación" value={envio.fecha_publicacion ? format(new Date(envio.fecha_publicacion), "d MMM yyyy", { locale: es }) : "—"} highlight={!envio.fecha_publicacion} />
+                <Row label="Fecha de publicación" value={formatFecha(envio.fecha_publicacion)} highlight={!envio.fecha_publicacion} />
                 <Row label="Medio" value={envio.medio || "—"} />
                 <Row label="Formato" value={envio.formato || "—"} />
                 <Row label="Enlaces" value={envio.enlaces ? "Sí" : "No"} />
