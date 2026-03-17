@@ -9,6 +9,25 @@ export default function EnvioDetalle({ envio, onClose }) {
   if (!envio) return null;
 
   const isPub = envio.tipo === "publicacion";
+  const navigate = useNavigate();
+
+  const handleReenviar = () => {
+    onClose();
+    if (isPub) {
+      navigate("/Publicaciones", { state: { reenvio: envio } });
+    } else {
+      navigate("/Premios", { state: { reenvio: envio } });
+    }
+  };
+
+  const formatFecha = (fechaStr) => {
+    if (!fechaStr) return "—";
+    // Si es solo fecha (YYYY-MM-DD) parseamos sin timezone
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fechaStr)) {
+      return format(parseISO(fechaStr), "d MMM yyyy", { locale: es });
+    }
+    return format(new Date(fechaStr), "d MMM yyyy", { locale: es });
+  };
 
   return (
     <AnimatePresence>
