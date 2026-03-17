@@ -94,11 +94,15 @@ export default function Envios() {
                       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
                         {envio.medio && <span className="text-[12px] text-white/40">{envio.medio}</span>}
                         {envio.formato && <span className="text-[12px] text-white/40">{envio.formato}</span>}
-                        {envio.fecha_publicacion && (
-                          <span className="text-[12px] text-white/40">
-                            📅 {format(parseISO(envio.fecha_publicacion), "d MMM yyyy", { locale: es })}
-                          </span>
-                        )}
+                        {envio.fecha_publicacion && (() => {
+                          const soloFecha = String(envio.fecha_publicacion).slice(0, 10);
+                          const [y, m, d] = soloFecha.split("-").map(Number);
+                          return y && m && d ? (
+                            <span className="text-[12px] text-white/40">
+                              📅 {format(new Date(y, m - 1, d), "d MMM yyyy", { locale: es })}
+                            </span>
+                          ) : null;
+                        })()}
                         {envio.premio && <span className="text-[12px] text-violet-400/60">🏆 {envio.premio}</span>}
                         {envio.enlaces && <span className="text-[12px] text-white/40">Con enlaces</span>}
                       </div>
