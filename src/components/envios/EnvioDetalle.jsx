@@ -114,6 +114,17 @@ export default function EnvioDetalle({ envio, onClose }) {
               </div>
             )}
           </div>
+
+          {/* Footer */}
+          <div className="px-6 pb-6 pt-2">
+            <button
+              onClick={handleReenviar}
+              className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-violet-500/30 bg-violet-500/10 text-[13px] font-medium text-violet-300 hover:bg-violet-500/20 transition-colors"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Volver a enviar
+            </button>
+          </div>
         </motion.div>
       </div>
     </AnimatePresence>
