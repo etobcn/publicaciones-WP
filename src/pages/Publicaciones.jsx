@@ -75,7 +75,7 @@ export default function Publicaciones() {
         tipo: "publicacion",
         fecha_envio: new Date().toISOString(),
         nombre_empresa: form.nombre_empresa,
-        fecha_publicacion: form.fecha,
+        fecha_publicacion: form.fecha || null,
         medio: form.medio,
         formato: form.formato,
         enlaces: form.enlaces,
