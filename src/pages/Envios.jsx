@@ -65,7 +65,8 @@ export default function Envios() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: i * 0.03 }}
-              className="rounded-xl border border-white/[0.10] bg-white/[0.04] p-5 hover:bg-white/[0.06] transition-colors"
+              onClick={() => setEnvioSeleccionado(envio)}
+              className="rounded-xl border border-white/[0.12] bg-white/[0.05] p-5 hover:bg-white/[0.08] transition-colors cursor-pointer"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
