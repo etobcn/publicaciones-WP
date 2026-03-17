@@ -19,13 +19,16 @@ const MEDIOS = [
 const FORMATOS = ["Redaccional", "Entrevista", "2 Entrevistas"];
 
 export default function Publicaciones() {
+  const location = useLocation();
+  const reenvio = location.state?.reenvio;
+
   const [form, setForm] = useState({
-    nombre_empresa: "",
-    fecha: "",
-    medio: "",
-    formato: "",
-    enlaces: false,
-    premio: "",
+    nombre_empresa: reenvio?.nombre_empresa || "",
+    fecha: reenvio?.fecha_publicacion || "",
+    medio: reenvio?.medio || "",
+    formato: reenvio?.formato || "",
+    enlaces: reenvio?.enlaces || false,
+    premio: reenvio?.premio || "",
   });
   const [wordFiles, setWordFiles] = useState([]);
   const [mediaFiles, setMediaFiles] = useState([]);
