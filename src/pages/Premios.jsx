@@ -58,15 +58,17 @@ export default function Premios() {
   const handleSearchNews = async () => {
     setIsSearching(true);
     setSearchError("");
+    setResultados([]);
+    setSeleccionados(new Set());
+    setModoSeleccion(false);
     try {
       const response = await base44.functions.invoke("webhookPremiosNoticias", {
         premio: form.nombre_premio,
       }, { timeout: 90000 });
       if (response.data?.noticias) {
-        const found = response.data.noticias.slice(0, MAX_NOTICIAS);
-        setNoticias(
-          Array(MAX_NOTICIAS).fill(null).map((_, i) => found[i] ? { ...found[i] } : { ...EMPTY_NOTICIA })
-        );
+        const found = response.data.noticias.slice(0, MAX_RESULTADOS);
+        setResultados(found);
+        setModoSeleccion(true);
       } else if (response.data?.error) {
         setSearchError(response.data.error);
       }
@@ -75,6 +77,28 @@ export default function Premios() {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const toggleSeleccion = (i) => {
+    setSeleccionados((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) {
+        next.delete(i);
+      } else if (next.size < MAX_NOTICIAS) {
+        next.add(i);
+      }
+      return next;
+    });
+  };
+
+  const confirmarSeleccion = () => {
+    const elegidas = [...seleccionados].sort((a, b) => a - b).map((i) => resultados[i]);
+    setNoticias(
+      Array(MAX_NOTICIAS).fill(null).map((_, i) => elegidas[i] ? { ...elegidas[i] } : { ...EMPTY_NOTICIA })
+    );
+    setModoSeleccion(false);
+    setResultados([]);
+    setSeleccionados(new Set());
   };
 
   const handleSubmit = async () => {
