@@ -3,13 +3,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { premio } = await req.json();
     if (!premio) return Response.json({ error: 'Falta el nombre del premio' }, { status: 400 });
 
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
       add_context_from_internet: true,
       prompt: `Busca en internet noticias reales y recientes relacionadas con: "${premio}".
