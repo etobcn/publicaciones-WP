@@ -10,14 +10,19 @@ Deno.serve(async (req) => {
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
       add_context_from_internet: true,
-      prompt: `Busca en internet noticias reales y recientes sobre los premios "${premio}" organizados o otorgados por el periódico La Razón.
-Busca específicamente ceremonias de entrega de premios, ganadores, actos de gala y cobertura mediática de estos premios en La Razón y otros medios.
-Encuentra hasta 12 noticias distintas. Para cada una extrae exactamente:
-- titulo: El titular de la noticia
-- texto: Un resumen muy breve (2-3 líneas máximo)
-- link: La URL real y directa de la noticia
+      prompt: `Realiza una búsqueda en internet sobre "${premio}" y devuelve hasta 12 noticias reales.
 
-Si encuentras menos de 12 noticias, devuelve solo las que encuentres.`,
+INSTRUCCIONES CRÍTICAS:
+1. Usa la búsqueda web para encontrar noticias reales publicadas en internet sobre este premio.
+2. Para cada noticia, devuelve ÚNICAMENTE la URL exacta tal como aparece en los resultados de búsqueda. NO construyas ni modifiques URLs. NO inventes URLs. Copia la URL exacta del resultado de búsqueda.
+3. Si no tienes la URL exacta de una noticia, NO la incluyas.
+4. Incluye noticias de cualquier medio (larazon.es, antena3.com, youtube.com, etc.), no solo de La Razón.
+5. Cada noticia debe ser un artículo diferente con URL diferente.
+
+Para cada noticia real encontrada extrae:
+- titulo: El titular exacto de la noticia
+- texto: Resumen breve de 2-3 líneas
+- link: La URL exacta y completa tal como aparece en los resultados de búsqueda (https://...)`,
       response_json_schema: {
         type: 'object',
         properties: {
