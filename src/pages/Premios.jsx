@@ -262,18 +262,79 @@ export default function Premios() {
               </div>
             )}
 
-            {/* Bloques de noticias */}
-            <div className="space-y-3">
-              {noticias.map((noticia, i) => (
-                <NoticiaBlock
-                  key={i}
-                  index={i}
-                  noticia={noticia}
-                  onChange={(field, value) => updateNoticia(i, field, value)}
-                  onClear={() => clearNoticia(i)}
-                />
-              ))}
-            </div>
+            {/* Modo selección: elegir de los resultados encontrados */}
+            {modoSeleccion && resultados.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] text-white/40">
+                    Selecciona hasta 6 noticias ({seleccionados.size}/6)
+                  </p>
+                  <Button
+                    onClick={confirmarSeleccion}
+                    disabled={seleccionados.size === 0}
+                    className="h-8 px-4 rounded-lg text-[12px] font-semibold bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40"
+                  >
+                    Confirmar selección →
+                  </Button>
+                </div>
+                {resultados.map((noticia, i) => {
+                  const isSelected = seleccionados.has(i);
+                  const isDisabled = !isSelected && seleccionados.size >= MAX_NOTICIAS;
+                  return (
+                    <div
+                      key={i}
+                      onClick={() => !isDisabled && toggleSeleccion(i)}
+                      className={`rounded-lg border p-3 cursor-pointer transition-all duration-200 ${
+                        isSelected
+                          ? "border-violet-500/50 bg-violet-500/[0.08]"
+                          : isDisabled
+                          ? "border-white/[0.03] bg-white/[0.01] opacity-40 cursor-not-allowed"
+                          : "border-white/[0.07] bg-white/[0.02] hover:border-white/[0.15] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`mt-0.5 h-4 w-4 shrink-0 rounded border flex items-center justify-center transition-colors ${
+                          isSelected ? "bg-violet-500 border-violet-500" : "border-white/20"
+                        }`}>
+                          {isSelected && <span className="text-[10px] text-white font-bold">✓</span>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-medium text-white/80 leading-snug">{noticia.titulo}</p>
+                          {noticia.texto && <p className="mt-1 text-[11px] text-white/40 leading-relaxed">{noticia.texto}</p>}
+                          {noticia.link && (
+                            <p className="mt-1 text-[10px] text-violet-400/50 truncate">{noticia.link}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="flex justify-end">
+                  <Button
+                    onClick={confirmarSeleccion}
+                    disabled={seleccionados.size === 0}
+                    className="h-8 px-4 rounded-lg text-[12px] font-semibold bg-violet-600 hover:bg-violet-500 text-white disabled:opacity-40"
+                  >
+                    Confirmar selección ({seleccionados.size}) →
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Bloques de noticias seleccionadas */}
+            {!modoSeleccion && (
+              <div className="space-y-3">
+                {noticias.map((noticia, i) => (
+                  <NoticiaBlock
+                    key={i}
+                    index={i}
+                    noticia={noticia}
+                    onChange={(field, value) => updateNoticia(i, field, value)}
+                    onClear={() => clearNoticia(i)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </FormCard>
 
