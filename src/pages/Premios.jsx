@@ -9,6 +9,7 @@ import FileDropZone from "@/components/shared/FileDropZone";
 
 const EMPTY_NOTICIA = { titulo: "", texto: "", link: "" };
 const MAX_NOTICIAS = 6;
+const MAX_RESULTADOS = 12;
 
 export default function Premios() {
   const [form, setForm] = useState({
