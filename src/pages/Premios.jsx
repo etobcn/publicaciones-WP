@@ -57,7 +57,7 @@ export default function Premios() {
     try {
       const response = await base44.functions.invoke("webhookPremiosNoticias", {
         premio: form.nombre_premio,
-      });
+      }, { timeout: 60000 });
       if (response.data?.noticias) {
         const found = response.data.noticias.slice(0, MAX_NOTICIAS);
         setNoticias(
