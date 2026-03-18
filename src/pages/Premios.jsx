@@ -23,6 +23,9 @@ export default function Premios() {
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const [resultados, setResultados] = useState([]); // todos los encontrados
+  const [seleccionados, setSeleccionados] = useState(new Set()); // índices seleccionados
+  const [modoSeleccion, setModoSeleccion] = useState(false);
 
   // Adjuntos
   const [imagenDestacada, setImagenDestacada] = useState([]);
