@@ -299,10 +299,23 @@ export default function Premios() {
                           {isSelected && <span className="text-[10px] text-white font-bold">✓</span>}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-medium text-white/80 leading-snug">{noticia.titulo}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-[12px] font-medium text-white/80 leading-snug">{noticia.titulo}</p>
+                            {noticia.link && (
+                              <a
+                                href={noticia.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="shrink-0 text-[10px] text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-400/50 rounded px-1.5 py-0.5 transition-colors"
+                              >
+                                Ver →
+                              </a>
+                            )}
+                          </div>
                           {noticia.texto && <p className="mt-1 text-[11px] text-white/40 leading-relaxed">{noticia.texto}</p>}
                           {noticia.link && (
-                            <p className="mt-1 text-[10px] text-violet-400/50 truncate">{noticia.link}</p>
+                            <p className="mt-1 text-[10px] text-white/20 truncate">{noticia.link}</p>
                           )}
                         </div>
                       </div>
