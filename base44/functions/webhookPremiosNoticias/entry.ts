@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
     const { premio } = await req.json();
     if (!premio) return Response.json({ error: 'Falta el nombre del premio' }, { status: 400 });
 
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    const result = await base44.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
       add_context_from_internet: true,
       prompt: `Realiza una búsqueda en internet sobre "${premio}" y devuelve hasta 12 noticias reales.
