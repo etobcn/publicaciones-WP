@@ -166,6 +166,7 @@ export default function Premios() {
       imagen_destacada_urls: imgDestacadaUrls,
       imagen_cabecera_urls: imgCabeceraUrls,
       imagen_grupal_urls: imgGrupalUrls,
+      pdf_gala_urls: pdfGalaUrls,
       noticia_papel_urls: noticiaPapelUrls,
       autopublicidad_urls: autopublicidadUrls,
       ...noticiasPlanas,
@@ -273,6 +274,7 @@ export default function Premios() {
             <FileDropZone label="Imagen Destacada" accept="image/*" files={imagenDestacada} onFilesChange={setImagenDestacada} />
             <FileDropZone label="Imagen Cabecera" accept="image/*" files={imagenCabecera} onFilesChange={setImagenCabecera} />
             <FileDropZone label="Imagen Grupal" accept="image/*" files={imagenGrupal} onFilesChange={setImagenGrupal} />
+            <FileDropZone label="PDF Gala" accept=".pdf" files={pdfGala} onFilesChange={setPdfGala} />
             <FileDropZone label="Noticia Papel" accept="image/*,.pdf" files={noticiaPapel} onFilesChange={setNoticiaPapel} />
             <FileDropZone label="Autopublicidad" accept="image/*,.pdf" files={autopublicidad} onFilesChange={setAutopublicidad} />
           </div>
