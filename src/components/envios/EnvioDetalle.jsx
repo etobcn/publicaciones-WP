@@ -88,6 +88,7 @@ export default function EnvioDetalle({ envio, onClose }) {
 
             {!isPub && (
               <>
+                {envio.fecha_gala && <Row label="Fecha de la Gala" value={formatFecha(envio.fecha_gala)} />}
                 {envio.youtube_url && (
                   <RowLink label="YouTube" href={envio.youtube_url} />
                 )}
