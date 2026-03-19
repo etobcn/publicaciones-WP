@@ -141,10 +141,11 @@ export default function Premios() {
     setPublishStatus("loading");
     setPublishError("");
 
-    const [imgDestacadaUrls, imgCabeceraUrls, imgGrupalUrls, noticiaPapelUrls, autopublicidadUrls] = await Promise.all([
+    const [imgDestacadaUrls, imgCabeceraUrls, imgGrupalUrls, pdfGalaUrls, noticiaPapelUrls, autopublicidadUrls] = await Promise.all([
       uploadFiles(imagenDestacada),
       uploadFiles(imagenCabecera),
       uploadFiles(imagenGrupal),
+      uploadFiles(pdfGala),
       uploadFiles(noticiaPapel),
       uploadFiles(autopublicidad),
     ]);
