@@ -33,6 +33,7 @@ export default function Premios() {
   const [imagenDestacada, setImagenDestacada] = useState([]);
   const [imagenCabecera, setImagenCabecera] = useState([]);
   const [imagenGrupal, setImagenGrupal] = useState([]);
+  const [pdfGala, setPdfGala] = useState([]);
   const [noticiaPapel, setNoticiaPapel] = useState([]);
   const [autopublicidad, setAutopublicidad] = useState([]);
 
