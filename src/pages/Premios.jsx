@@ -14,6 +14,7 @@ const MAX_RESULTADOS = 12;
 export default function Premios() {
   const [form, setForm] = useState({
     nombre_premio: "",
+    fecha_gala: "",
     enlace_video: "",
     noticia_premio: "",
   });
