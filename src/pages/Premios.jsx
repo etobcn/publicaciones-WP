@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, Send, Loader2, ExternalLink, Youtube, CheckCircle, AlertCircle, Link, X } from "lucide-react";
+import { Bot, Send, Loader2, ExternalLink, Youtube, CheckCircle, AlertCircle, Link, X, BookOpen, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
@@ -10,6 +10,7 @@ import FileDropZone from "@/components/shared/FileDropZone";
 const EMPTY_NOTICIA = { titulo: "", texto: "", link: "" };
 const MAX_NOTICIAS = 6;
 const MAX_RESULTADOS = 12;
+const STORAGE_KEY = "premios_noticias_guardadas";
 
 export default function Premios() {
   const [form, setForm] = useState({
@@ -19,23 +20,30 @@ export default function Premios() {
     noticia_premio: "",
   });
 
-  // Array de hasta 6 noticias estructuradas
   const [noticias, setNoticias] = useState(Array(MAX_NOTICIAS).fill(null).map(() => ({ ...EMPTY_NOTICIA })));
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState("");
-  const [resultados, setResultados] = useState([]); // todos los encontrados
-  const [seleccionados, setSeleccionados] = useState(new Set()); // índices seleccionados
+  const [resultados, setResultados] = useState([]);
+  const [seleccionados, setSeleccionados] = useState(new Set());
   const [modoSeleccion, setModoSeleccion] = useState(false);
+  const [noticiasGuardadas, setNoticiasGuardadas] = useState([]);
 
   // Adjuntos
   const [imagenDestacada, setImagenDestacada] = useState([]);
   const [imagenCabecera, setImagenCabecera] = useState([]);
+  const [imagenGrupal, setImagenGrupal] = useState([]);
   const [noticiaPapel, setNoticiaPapel] = useState([]);
   const [autopublicidad, setAutopublicidad] = useState([]);
 
   const [publishStatus, setPublishStatus] = useState(null);
   const [publishError, setPublishError] = useState("");
+
+  // Cargar noticias guardadas del localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setNoticiasGuardadas(JSON.parse(saved));
+  }, []);
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
 
@@ -102,61 +110,93 @@ export default function Premios() {
     setSeleccionados(new Set());
   };
 
+  const guardarNoticias = () => {
+    const activas = noticias.filter((n) => n.titulo || n.link);
+    if (activas.length === 0) return;
+    const entrada = {
+      id: Date.now(),
+      premio: form.nombre_premio || "Sin nombre",
+      fecha: new Date().toLocaleDateString("es-ES"),
+      noticias: activas,
+    };
+    const nuevas = [entrada, ...noticiasGuardadas].slice(0, 10); // máximo 10 guardados
+    setNoticiasGuardadas(nuevas);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevas));
+  };
+
+  const cargarNoticiasGuardadas = (entrada) => {
+    setNoticias(
+      Array(MAX_NOTICIAS).fill(null).map((_, i) => entrada.noticias[i] ? { ...entrada.noticias[i] } : { ...EMPTY_NOTICIA })
+    );
+  };
+
+  const eliminarGuardado = (id) => {
+    const nuevas = noticiasGuardadas.filter((g) => g.id !== id);
+    setNoticiasGuardadas(nuevas);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nuevas));
+  };
+
   const handleSubmit = async () => {
     setPublishStatus("loading");
     setPublishError("");
+
+    const [imgDestacadaUrls, imgCabeceraUrls, imgGrupalUrls, noticiaPapelUrls, autopublicidadUrls] = await Promise.all([
+      uploadFiles(imagenDestacada),
+      uploadFiles(imagenCabecera),
+      uploadFiles(imagenGrupal),
+      uploadFiles(noticiaPapel),
+      uploadFiles(autopublicidad),
+    ]);
+
+    const noticiasPlanas = {};
+    noticias.forEach((n, i) => {
+      const num = i + 1;
+      noticiasPlanas[`premio_noticias_titulo_${num}`] = n.titulo || "";
+      noticiasPlanas[`premio_noticias_texto_${num}`] = n.texto || "";
+      noticiasPlanas[`premio_noticias_link_${num}`] = n.link || "";
+    });
+
+    const payload = {
+      premio: form.nombre_premio,
+      fecha_gala: form.fecha_gala,
+      youtube_url: form.enlace_video,
+      noticia_premio_url: form.noticia_premio,
+      imagen_destacada_urls: imgDestacadaUrls,
+      imagen_cabecera_urls: imgCabeceraUrls,
+      imagen_grupal_urls: imgGrupalUrls,
+      noticia_papel_urls: noticiaPapelUrls,
+      autopublicidad_urls: autopublicidadUrls,
+      ...noticiasPlanas,
+    };
+
+    let webhookSuccess = false;
+    let webhookError = "";
     try {
-      const [imgDestacadaUrls, imgCabeceraUrls, noticiaPapelUrls, autopublicidadUrls] = await Promise.all([
-        uploadFiles(imagenDestacada),
-        uploadFiles(imagenCabecera),
-        uploadFiles(noticiaPapel),
-        uploadFiles(autopublicidad),
-      ]);
-
-      // Mapeo plano para WordPress/n8n
-      const noticiasPlanas = {};
-      noticias.forEach((n, i) => {
-        const num = i + 1;
-        noticiasPlanas[`premio_noticias_titulo_${num}`] = n.titulo || "";
-        noticiasPlanas[`premio_noticias_texto_${num}`] = n.texto || "";
-        noticiasPlanas[`premio_noticias_link_${num}`] = n.link || "";
-      });
-
-      const payload = {
-        premio: form.nombre_premio,
-        youtube_url: form.enlace_video,
-        noticia_premio_url: form.noticia_premio,
-        imagen_destacada_urls: imgDestacadaUrls,
-        imagen_cabecera_urls: imgCabeceraUrls,
-        noticia_papel_urls: noticiaPapelUrls,
-        autopublicidad_urls: autopublicidadUrls,
-        ...noticiasPlanas,
-      };
-
       const response = await base44.functions.invoke("webhookPremiosPublicar", payload);
-
-      await base44.entities.Envio.create({
-        tipo: "premio",
-        fecha_envio: new Date().toISOString(),
-        nombre_premio: form.nombre_premio,
-        fecha_gala: form.fecha_gala || null,
-        youtube_url: form.enlace_video,
-        status: response.data?.success ? "enviado" : "error",
-      });
-
-      if (response.data?.success) {
-        setPublishStatus("success");
-      } else {
-        setPublishError(response.data?.error || "Error desconocido");
-        setPublishStatus("error");
-      }
+      webhookSuccess = response.data?.success ?? true;
+      webhookError = response.data?.error || "Error desconocido";
     } catch (err) {
-      setPublishError(err.message || "Error al conectar con el servidor");
+      webhookError = err.message || "Error al conectar con el servidor";
+    }
+
+    // Guardar en BD siempre, independientemente del resultado del webhook
+    await base44.entities.Envio.create({
+      tipo: "premio",
+      fecha_envio: new Date().toISOString(),
+      nombre_premio: form.nombre_premio,
+      fecha_gala: form.fecha_gala || null,
+      youtube_url: form.enlace_video,
+      imagen_grupal_urls: imgGrupalUrls,
+      status: webhookSuccess ? "enviado" : "error",
+    });
+
+    if (webhookSuccess) {
+      setPublishStatus("success");
+    } else {
+      setPublishError(webhookError);
       setPublishStatus("error");
     }
   };
-
-  const hasNoticias = noticias.some((n) => n.titulo || n.texto || n.link);
 
   return (
     <div className="px-8 py-8 max-w-3xl mx-auto">
@@ -230,6 +270,7 @@ export default function Premios() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileDropZone label="Imagen Destacada" accept="image/*" files={imagenDestacada} onFilesChange={setImagenDestacada} />
             <FileDropZone label="Imagen Cabecera" accept="image/*" files={imagenCabecera} onFilesChange={setImagenCabecera} />
+            <FileDropZone label="Imagen Grupal" accept="image/*" files={imagenGrupal} onFilesChange={setImagenGrupal} />
             <FileDropZone label="Noticia Papel" accept="image/*,.pdf" files={noticiaPapel} onFilesChange={setNoticiaPapel} />
             <FileDropZone label="Autopublicidad" accept="image/*,.pdf" files={autopublicidad} onFilesChange={setAutopublicidad} />
           </div>
@@ -238,18 +279,61 @@ export default function Premios() {
         {/* Módulo de Noticias */}
         <FormCard title="Módulo de Noticias" description="Busca noticias relacionadas con el premio usando IA con acceso a internet.">
           <div className="space-y-4">
-            <Button
-              variant="outline"
-              onClick={handleSearchNews}
-              disabled={isSearching || !form.nombre_premio}
-              className="h-10 rounded-lg border-white/[0.08] bg-white/[0.03] text-[13px] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSearching ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin text-violet-400" />Buscando noticias...</>
-              ) : (
-                <><Bot className="mr-2 h-4 w-4 text-violet-400" />🤖 Buscar Noticias Relacionadas con IA</>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                variant="outline"
+                onClick={handleSearchNews}
+                disabled={isSearching || !form.nombre_premio}
+                className="h-10 rounded-lg border-white/[0.08] bg-white/[0.03] text-[13px] text-white/70 hover:text-white hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSearching ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin text-violet-400" />Buscando noticias...</>
+                ) : (
+                  <><Bot className="mr-2 h-4 w-4 text-violet-400" />🤖 Buscar Noticias con IA</>
+                )}
+              </Button>
+
+              {/* Guardar noticias actuales */}
+              {noticias.some((n) => n.titulo || n.link) && (
+                <Button
+                  variant="outline"
+                  onClick={guardarNoticias}
+                  className="h-10 rounded-lg border-white/[0.08] bg-white/[0.03] text-[13px] text-white/50 hover:text-white hover:bg-white/[0.06] transition-all duration-200"
+                >
+                  <BookOpen className="mr-2 h-3.5 w-3.5 text-amber-400" />
+                  Guardar noticias
+                </Button>
               )}
-            </Button>
+            </div>
+
+            {/* Noticias guardadas */}
+            {noticiasGuardadas.length > 0 && (
+              <div className="rounded-lg border border-amber-500/[0.15] bg-amber-500/[0.04] p-3 space-y-2">
+                <p className="text-[11px] font-medium text-amber-400/70 mb-2">📚 Noticias guardadas</p>
+                {noticiasGuardadas.map((g) => (
+                  <div key={g.id} className="flex items-center justify-between gap-3 py-1.5 border-t border-white/[0.04] first:border-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] text-white/70 truncate">{g.premio}</p>
+                      <p className="text-[10px] text-white/30">{g.fecha} · {g.noticias.length} noticias</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => cargarNoticiasGuardadas(g)}
+                        className="text-[11px] text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-400/50 rounded px-2 py-1 transition-colors"
+                      >
+                        Cargar
+                      </button>
+                      <button
+                        onClick={() => eliminarGuardado(g.id)}
+                        className="p-1 rounded hover:bg-white/[0.06] text-white/20 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {isSearching && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -272,7 +356,7 @@ export default function Premios() {
               </div>
             )}
 
-            {/* Modo selección: elegir de los resultados encontrados */}
+            {/* Modo selección */}
             {modoSeleccion && resultados.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -312,21 +396,15 @@ export default function Premios() {
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-[12px] font-medium text-white/80 leading-snug">{noticia.titulo}</p>
                             {noticia.link && (
-                              <a
-                                href={noticia.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <a href={noticia.link} target="_blank" rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="shrink-0 text-[10px] text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-400/50 rounded px-1.5 py-0.5 transition-colors"
-                              >
+                                className="shrink-0 text-[10px] text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-400/50 rounded px-1.5 py-0.5 transition-colors">
                                 Ver →
                               </a>
                             )}
                           </div>
                           {noticia.texto && <p className="mt-1 text-[11px] text-white/40 leading-relaxed">{noticia.texto}</p>}
-                          {noticia.link && (
-                            <p className="mt-1 text-[10px] text-white/20 truncate">{noticia.link}</p>
-                          )}
+                          {noticia.link && <p className="mt-1 text-[10px] text-white/20 truncate">{noticia.link}</p>}
                         </div>
                       </div>
                     </div>
@@ -344,7 +422,7 @@ export default function Premios() {
               </div>
             )}
 
-            {/* Bloques de noticias seleccionadas */}
+            {/* Bloques de noticias */}
             {!modoSeleccion && (
               <div className="space-y-3">
                 {noticias.map((noticia, i) => (
