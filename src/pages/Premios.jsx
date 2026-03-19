@@ -139,6 +139,7 @@ export default function Premios() {
         tipo: "premio",
         fecha_envio: new Date().toISOString(),
         nombre_premio: form.nombre_premio,
+        fecha_gala: form.fecha_gala || null,
         youtube_url: form.enlace_video,
         status: response.data?.success ? "enviado" : "error",
       });
@@ -175,12 +176,20 @@ export default function Premios() {
         {/* Datos del Evento */}
         <FormCard title="Datos del Evento">
           <div className="space-y-4">
-            <DarkInput
-              label="Nombre exacto del Premio"
-              placeholder="Ej: Premios Expansión 2024 — Categoría Innovación"
-              value={form.nombre_premio}
-              onChange={(e) => updateField("nombre_premio", e.target.value)}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <DarkInput
+                label="Nombre exacto del Premio"
+                placeholder="Ej: Premios Expansión 2024 — Categoría Innovación"
+                value={form.nombre_premio}
+                onChange={(e) => updateField("nombre_premio", e.target.value)}
+              />
+              <DarkInput
+                label="Fecha de la Gala"
+                type="date"
+                value={form.fecha_gala}
+                onChange={(e) => updateField("fecha_gala", e.target.value)}
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <DarkInput
