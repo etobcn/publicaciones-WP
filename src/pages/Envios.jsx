@@ -110,6 +110,15 @@ export default function Envios() {
 
                     {envio.tipo === "premio" && (
                       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                        {envio.fecha_gala && (() => {
+                          const soloFecha = String(envio.fecha_gala).slice(0, 10);
+                          const [y, m, d] = soloFecha.split("-").map(Number);
+                          return y && m && d ? (
+                            <span className="text-[12px] text-white/40">
+                              📅 {format(new Date(y, m - 1, d), "d MMM yyyy", { locale: es })}
+                            </span>
+                          ) : null;
+                        })()}
                         {envio.youtube_url && (
                           <a href={envio.youtube_url} target="_blank" rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[12px] text-violet-400/60 hover:text-violet-400 transition-colors">
@@ -140,7 +149,7 @@ export default function Envios() {
 
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-[11px] text-white/25">
-                    {envio.fecha_envio ? format(new Date(envio.fecha_envio), "d MMM yyyy, HH:mm", { locale: es }) : "—"}
+                    {envio.created_date ? format(new Date(envio.created_date), "d MMM yyyy, HH:mm", { locale: es }) : "—"}
                   </span>
                   <ChevronRight className="h-4 w-4 text-white/20" />
                 </div>

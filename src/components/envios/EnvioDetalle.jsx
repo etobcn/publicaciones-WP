@@ -74,7 +74,7 @@ export default function EnvioDetalle({ envio, onClose }) {
 
           {/* Body */}
           <div className="p-6 space-y-4">
-            <Row label="Fecha de envío" value={envio.fecha_envio ? format(new Date(envio.fecha_envio), "d MMM yyyy, HH:mm", { locale: es }) : "—"} />
+            <Row label="Fecha de envío" value={envio.created_date ? format(new Date(envio.created_date), "d MMM yyyy, HH:mm", { locale: es }) : "—"} />
 
             {isPub && (
               <>
