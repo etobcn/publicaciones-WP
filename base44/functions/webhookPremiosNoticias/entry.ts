@@ -14,21 +14,21 @@ Deno.serve(async (req) => {
     const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gemini_3_flash',
       add_context_from_internet: true,
-      prompt: `Busca en internet noticias reales sobre el premio: "${premio}".
+      prompt: `Busca en internet TODAS las noticias reales que encuentres sobre el premio: "${premio}".
 
 ${fechaContexto}
 
-REGLAS CRÍTICAS SOBRE LAS URLs:
-1. El link de cada noticia DEBE ser la URL real y final del artículo, por ejemplo: https://www.larazon.es/economia/articulo-ejemplo.html
-2. NUNCA uses URLs de vertexaisearch.cloud.google.com, ni redirectores, ni URLs de búsqueda de Google. Solo URLs directas al artículo.
-3. Si no tienes la URL directa y real del artículo, NO incluyas esa noticia. Es mejor devolver 3 noticias con URLs reales que 10 con URLs inventadas o de redirectores.
-4. Solo incluye artículos de esta edición del premio, no de ediciones anteriores.
-5. Verifica mentalmente que cada URL es un enlace directo a la noticia (debe empezar por https:// y apuntar al dominio del medio, no a google ni a vertexai).
+Devuelve hasta 12 resultados. Cuantos más resultados relevantes encuentres, mejor.
 
-Por cada noticia:
+Por cada noticia incluye:
 - titulo: El titular exacto del artículo
-- texto: Resumen de 2-3 líneas
-- link: URL directa y real al artículo (https://dominio.com/ruta/articulo)`,
+- texto: Resumen breve de 2-3 líneas con los datos clave (galardonados, categorías, etc.)
+- link: La URL del artículo tal como aparece en los resultados de búsqueda (puede ser una URL directa al medio o una URL de redirección de Google/Vertex; ambas son válidas)
+
+IMPORTANTE:
+- Solo incluye artículos de esta edición concreta del premio, no de ediciones anteriores.
+- No inventes URLs. Si no estás seguro de una URL, no la incluyas.
+- Prioriza artículos de medios como larazon.es y sus suplementos regionales, así como medios económicos y locales que cubrieron el evento.`,
       response_json_schema: {
         type: 'object',
         properties: {
@@ -47,14 +47,13 @@ Por cada noticia:
       }
     });
 
-    // Filtrar cualquier URL que sea un redirector de Google/Vertex AI
+    // Solo descartamos URLs claramente inválidas (no http) o búsquedas genéricas de Google.
+    // Los redirectores de vertexaisearch SÍ funcionan al hacer clic, no se filtran.
     const noticias = (result?.noticias || []).filter(n => {
-      if (!n.link) return false;
-      const url = n.link.toLowerCase();
-      if (url.includes('vertexaisearch.cloud.google.com')) return false;
-      if (url.includes('google.com/search')) return false;
-      if (url.includes('googleapis.com')) return false;
+      if (!n.link || typeof n.link !== 'string') return false;
+      const url = n.link.toLowerCase().trim();
       if (!url.startsWith('http')) return false;
+      if (url.includes('google.com/search')) return false;
       return true;
     });
 
