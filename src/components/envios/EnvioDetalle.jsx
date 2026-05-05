@@ -6,10 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 export default function EnvioDetalle({ envio, onClose }) {
+  const navigate = useNavigate();
+
   if (!envio) return null;
 
   const isPub = envio.tipo === "publicacion";
-  const navigate = useNavigate();
 
   const handleReenviar = () => {
     onClose();
