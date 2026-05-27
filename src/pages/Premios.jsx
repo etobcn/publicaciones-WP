@@ -6,17 +6,23 @@ import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
 import DarkInput from "@/components/shared/DarkInput";
 import FileDropZone from "@/components/shared/FileDropZone";
+import { useLocation } from "react-router-dom";
 
 const EMPTY_NOTICIA = { titulo: "", texto: "", link: "" };
 const MAX_NOTICIAS = 6;
 const MAX_RESULTADOS = 12;
 const STORAGE_KEY = "premios_noticias_guardadas";
 
+const normalizarFecha = (f) => (f ? String(f).slice(0, 10) : "");
+
 export default function Premios() {
+  const location = useLocation();
+  const reenvio = location.state?.reenvio;
+
   const [form, setForm] = useState({
-    nombre_premio: "",
-    fecha_gala: "",
-    enlace_video: "",
+    nombre_premio: reenvio?.nombre_premio || "",
+    fecha_gala: normalizarFecha(reenvio?.fecha_gala),
+    enlace_video: reenvio?.youtube_url || "",
     noticia_premio: "",
   });
 
@@ -210,9 +216,13 @@ export default function Premios() {
         transition={{ duration: 0.3 }}
         className="mb-8"
       >
-        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">Gestión de Premios</h1>
+        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">
+          {reenvio ? "Reenviar Premio" : "Gestión de Premios"}
+        </h1>
         <p className="mt-1 text-[13px] text-white/35">
-          Registra los datos del evento y genera noticias con asistencia de IA.
+          {reenvio
+            ? "Los datos del evento se han rellenado con el envío anterior. Vuelve a buscar las noticias y sube los archivos."
+            : "Registra los datos del evento y genera noticias con asistencia de IA."}
         </p>
       </motion.div>
 
