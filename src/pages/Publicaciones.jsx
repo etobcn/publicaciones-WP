@@ -204,16 +204,15 @@ export default function Publicaciones() {
               <h3 className="text-[15px] font-semibold text-white/90">Archivos Adjuntos</h3>
               <p className="mt-1 text-[13px] text-white/40">Sube el documento Word y las imágenes o PDFs asociados.</p>
             </div>
-            {(wordFiles.length > 0 || mediaFiles.length > 0) && (
-              <Button
-                variant="outline"
-                onClick={limpiarAdjuntos}
-                className="shrink-0 h-8 rounded-lg border-white/[0.08] bg-white/[0.03] text-[12px] text-white/50 hover:text-red-300 hover:bg-red-500/[0.06] hover:border-red-500/30 transition-all duration-200"
-              >
-                <Trash2 className="mr-1.5 h-3 w-3" />
-                Eliminar adjuntos
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              onClick={limpiarAdjuntos}
+              disabled={wordFiles.length === 0 && mediaFiles.length === 0}
+              className="shrink-0 h-8 rounded-lg border-white/[0.08] bg-white/[0.03] text-[12px] text-white/50 hover:text-red-300 hover:bg-red-500/[0.06] hover:border-red-500/30 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="mr-1.5 h-3 w-3" />
+              Eliminar adjuntos
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileDropZone
