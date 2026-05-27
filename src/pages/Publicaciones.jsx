@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FileText, Image, Send, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Image, Send, Loader2, CheckCircle, AlertCircle, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
 import FormCard from "@/components/shared/FormCard";
@@ -42,6 +42,26 @@ export default function Publicaciones() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const updateField = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const limpiarAdjuntos = () => {
+    setWordFiles([]);
+    setMediaFiles([]);
+  };
+
+  const resetearTodo = () => {
+    setForm({
+      nombre_empresa: "",
+      fecha: "",
+      medio: "",
+      formato: "",
+      enlaces: false,
+      premio: "",
+    });
+    setWordFiles([]);
+    setMediaFiles([]);
+    setStatus(null);
+    setErrorMsg("");
+  };
 
   const uploadFile = async (file) => {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -112,16 +132,26 @@ export default function Publicaciones() {
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mb-8"
+        className="mb-8 flex items-start justify-between gap-4"
       >
-        <h1 className="text-[22px] font-bold text-white/95 tracking-tight">
-          {reenvio ? "Reenviar Publicación" : "Nueva Publicación"}
-        </h1>
-        <p className="mt-1 text-[13px] text-white/35">
-          {reenvio
-            ? "Los campos se han rellenado con los datos del envío anterior. Sube de nuevo los archivos y envía."
-            : "Completa los datos y sube los archivos para procesar la publicación."}
-        </p>
+        <div>
+          <h1 className="text-[22px] font-bold text-white/95 tracking-tight">
+            {reenvio ? "Reenviar Publicación" : "Nueva Publicación"}
+          </h1>
+          <p className="mt-1 text-[13px] text-white/35">
+            {reenvio
+              ? "Los campos se han rellenado con los datos del envío anterior. Sube de nuevo los archivos y envía."
+              : "Completa los datos y sube los archivos para procesar la publicación."}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={resetearTodo}
+          className="shrink-0 h-9 rounded-lg border-white/[0.08] bg-white/[0.03] text-[12px] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-violet-500/30 transition-all duration-200"
+        >
+          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+          Actualizar
+        </Button>
       </motion.div>
 
       <div className="space-y-5">
@@ -168,13 +198,30 @@ export default function Publicaciones() {
           </div>
         </FormCard>
 
-        <FormCard title="Archivos Adjuntos" description="Sube el documento Word y las imágenes o PDFs asociados.">
+        <FormCard>
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-[15px] font-semibold text-white/90">Archivos Adjuntos</h3>
+              <p className="mt-1 text-[13px] text-white/40">Sube el documento Word y las imágenes o PDFs asociados.</p>
+            </div>
+            {(wordFiles.length > 0 || mediaFiles.length > 0) && (
+              <Button
+                variant="outline"
+                onClick={limpiarAdjuntos}
+                className="shrink-0 h-8 rounded-lg border-white/[0.08] bg-white/[0.03] text-[12px] text-white/50 hover:text-red-300 hover:bg-red-500/[0.06] hover:border-red-500/30 transition-all duration-200"
+              >
+                <Trash2 className="mr-1.5 h-3 w-3" />
+                Eliminar adjuntos
+              </Button>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileDropZone
               label="Subir documento Word"
               hint="Acepta archivos .doc y .docx"
               icon={FileText}
               accept=".doc,.docx"
+              files={wordFiles}
               onFilesChange={setWordFiles}
             />
             <FileDropZone
@@ -183,6 +230,7 @@ export default function Publicaciones() {
               icon={Image}
               accept="image/*,.pdf"
               multiple
+              files={mediaFiles}
               onFilesChange={setMediaFiles}
             />
           </div>
