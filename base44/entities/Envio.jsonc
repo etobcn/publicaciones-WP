@@ -1,0 +1,94 @@
+{
+  "name": "Envio",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "publicacion",
+        "premio"
+      ],
+      "description": "Tipo de env\u00edo"
+    },
+    "fecha_envio": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del env\u00edo"
+    },
+    "nombre_empresa": {
+      "type": "string",
+      "description": "Nombre de la empresa (publicaciones)"
+    },
+    "fecha_publicacion": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de la publicaci\u00f3n"
+    },
+    "medio": {
+      "type": "string",
+      "description": "Medio de publicaci\u00f3n"
+    },
+    "formato": {
+      "type": "string",
+      "description": "Formato de publicaci\u00f3n"
+    },
+    "enlaces": {
+      "type": "boolean",
+      "description": "Si incluye enlaces"
+    },
+    "premio": {
+      "type": "string",
+      "description": "Premio asociado"
+    },
+    "documento_word_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de documentos Word"
+    },
+    "imagenes_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de im\u00e1genes y PDFs"
+    },
+    "nombre_premio": {
+      "type": "string",
+      "description": "Nombre del premio (premios)"
+    },
+    "fecha_gala": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de la gala del premio"
+    },
+    "youtube_url": {
+      "type": "string",
+      "description": "URL del v\u00eddeo de YouTube"
+    },
+    "drive_url": {
+      "type": "string",
+      "description": "URL de Google Drive"
+    },
+    "imagen_grupal_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de im\u00e1genes grupales del premio"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "enviado",
+        "error"
+      ],
+      "default": "enviado"
+    }
+  },
+  "required": [
+    "tipo",
+    "fecha_envio"
+  ]
+}

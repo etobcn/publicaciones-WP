@@ -1,0 +1,38 @@
+{
+  "name": "Premio",
+  "type": "object",
+  "properties": {
+    "nombre_premio": {
+      "type": "string",
+      "description": "Nombre exacto del premio"
+    },
+    "fecha_gala": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de la gala del premio"
+    },
+    "enlace_video": {
+      "type": "string",
+      "description": "URL del v\u00eddeo de YouTube"
+    },
+    "enlace_drive": {
+      "type": "string",
+      "description": "URL de la carpeta de Google Drive"
+    },
+    "noticias_generadas": {
+      "type": "string",
+      "description": "Noticias generadas por IA"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "borrador",
+        "publicado"
+      ],
+      "default": "borrador"
+    }
+  },
+  "required": [
+    "nombre_premio"
+  ]
+}
