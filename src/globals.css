@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 95%;
+    --card: 240 6% 7%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 6% 7%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 263 70% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 13%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 240 5% 16%;
+    --muted-foreground: 240 5% 55%;
+    --accent: 240 5% 16%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 240 5% 16%;
+    --input: 240 5% 16%;
+    --ring: 263 70% 50%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(240, 6%, 7%);
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(240, 5%, 22%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(240, 5%, 30%);
+}
+
+/* Quill editor dark mode */
+.ql-toolbar.ql-snow {
+  border-color: hsl(240, 5%, 16%) !important;
+  background: hsl(240, 6%, 7%) !important;
+}
+.ql-container.ql-snow {
+  border-color: hsl(240, 5%, 16%) !important;
+  background: hsl(240, 6%, 5%) !important;
+  color: hsl(0, 0%, 90%) !important;
+  min-height: 200px;
+}
+.ql-editor {
+  color: hsl(0, 0%, 90%) !important;
+  min-height: 200px;
+}
+.ql-editor.ql-blank::before {
+  color: hsl(240, 5%, 40%) !important;
+  font-style: normal !important;
+}
+.ql-snow .ql-stroke {
+  stroke: hsl(240, 5%, 55%) !important;
+}
+.ql-snow .ql-fill {
+  fill: hsl(240, 5%, 55%) !important;
+}
+.ql-snow .ql-picker-label {
+  color: hsl(240, 5%, 55%) !important;
+}
+.ql-snow .ql-picker-options {
+  background: hsl(240, 6%, 10%) !important;
+  border-color: hsl(240, 5%, 16%) !important;
+}
+.ql-snow .ql-picker-item {
+  color: hsl(0, 0%, 80%) !important;
+}
