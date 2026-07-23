@@ -84,10 +84,14 @@ export default function Publicaciones() {
         imagenes_urls: mediaUrls,
       };
 
+      // El medio "Europa" tiene su propio workflow (extrae el texto de un PDF
+      // bilingüe ES/EN en vez de un Word ya redactado en castellano)
+      const webhookUrl = form.medio === "Europa" ? WEBHOOKS.publicacionesEuropa : WEBHOOKS.publicaciones;
+
       let webhookSuccess = false;
       let webhookError = "";
       try {
-        const response = await invokeWebhook(WEBHOOKS.publicaciones, payload);
+        const response = await invokeWebhook(webhookUrl, payload);
         webhookSuccess = response.data?.success ?? true;
         webhookError = response.data?.error || "Error desconocido";
       } catch (webhookErr) {
@@ -211,10 +215,10 @@ export default function Publicaciones() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FileDropZone
-              label="Subir documento Word"
-              hint="Acepta archivos .doc y .docx"
+              label={form.medio === "Europa" ? "Subir documento (Word o PDF)" : "Subir documento Word"}
+              hint={form.medio === "Europa" ? "Europa: sube el PDF con el texto en ES/EN" : "Acepta archivos .doc y .docx"}
               icon={FileText}
-              accept=".doc,.docx"
+              accept={form.medio === "Europa" ? ".doc,.docx,.pdf" : ".doc,.docx"}
               files={wordFiles}
               onFilesChange={setWordFiles}
             />
